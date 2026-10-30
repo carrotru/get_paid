@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>接案收入管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#f4f2ed;--surface:#fff;--surface-2:#f8f7f3;--ink:#1d232b;--muted:#6b6f76;--line:#e6e2d9;
+  --accent:#1f5f4a;--accent-ink:#fff;--accent-soft:#e3efe9;
+  --paid:#23764f;--paid-soft:#e2f2e9;--pending:#a35d00;--pending-soft:#fbefd9;
+  --danger:#b42318;--danger-soft:#fdecea;
+  --shadow:0 1px 2px rgba(40,35,20,.04),0 6px 18px rgba(40,35,20,.05);--radius:14px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#14171b;--surface:#1c2026;--surface-2:#232830;--ink:#e9e7e2;--muted:#9aa0a8;--line:#2e343c;
+  --accent:#5fb393;--accent-ink:#0f1a15;--accent-soft:#1f3229;
+  --paid:#6cc79a;--paid-soft:#1d3127;--pending:#e2a24a;--pending-soft:#36291a;
+  --danger:#f08b80;--danger-soft:#3a2220;--shadow:none;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.money{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.top{padding:28px 0 0}
+.top-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-size:26px;font-weight:900;letter-spacing:.02em}
+.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+.month-nav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;box-shadow:var(--shadow)}
+.month-nav .icon{width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:20px;line-height:1;cursor:pointer}
+.month-nav .icon:hover{background:var(--surface-2)}
+.month-nav input{border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;padding:6px 4px;width:150px;text-align:center}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:9px 15px;font-size:14px;font-weight:700;cursor:pointer;background:var(--surface);color:var(--ink);transition:background .15s,border-color .15s;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.soft{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.btn.soft:hover{filter:brightness(.97)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{background:var(--surface-2);color:var(--ink)}
+.btn.danger{color:var(--danger)}
+.btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.btn.danger-solid{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:8px}
+.spacer{flex:1}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.stat.hero{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stat .label{font-size:13px;color:var(--muted);font-weight:500}
+.stat .num{font-size:26px;font-weight:900;margin:6px 0 2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.25}
+.stat .num.text{font-size:20px}
+.stat small{font-size:12px;color:var(--muted);display:block}
+.stat.hero .label,.stat.hero small{color:inherit;opacity:.85}
+
+.block{margin-top:36px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sec-head h2{margin:0;font-size:18px;font-weight:800}
+.sec-head p{margin:0;color:var(--muted);font-size:13px}
+
+.works{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.work{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;min-width:0}
+.work-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.work h3{margin:0;font-size:17px;font-weight:800;overflow-wrap:anywhere}
+.meta{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.period{background:var(--surface-2);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:end}
+.period .lbl{font-size:12px;color:var(--muted)}
+.period .amt{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.period .pay{text-align:right;font-size:12.5px;color:var(--muted)}
+.period .pay b{display:block;color:var(--ink);font-size:14px}
+.laststmt{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.goal{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted)}
+.goal .row{display:flex;justify-content:space-between}
+.goal b{color:var(--ink)}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width .3s}
+.quicks{display:flex;gap:8px;flex-wrap:wrap}
+.quick{flex:1 1 130px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;color:var(--ink);transition:background .15s,border-color .15s}
+.quick:hover{background:var(--accent-soft);border-color:var(--accent)}
+.quick b{font-size:14px;color:var(--accent)}
+.quick small{font-size:12px;color:var(--muted)}
+.work-actions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;border-top:1px dashed var(--line);padding-top:10px;margin-top:-2px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.subhead{padding:9px 14px;font-size:12px;font-weight:700;color:var(--muted);background:var(--surface-2);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+.sched{display:grid;grid-template-columns:62px minmax(0,1fr) auto 150px;gap:14px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.sched:last-child{border-bottom:0}
+.dbox{text-align:center;background:var(--surface-2);border-radius:10px;padding:6px 0;line-height:1.2}
+.dbox b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+.dbox span{font-size:11.5px;color:var(--muted)}
+.sched.late .dbox{background:var(--danger-soft);color:var(--danger)}
+.sched.late .dbox span{color:inherit}
+.sched.paid .dbox{background:var(--paid-soft);color:var(--paid)}
+.sched.paid .dbox span{color:inherit}
+.sched.est .dbox{background:transparent;border:1px dashed var(--line)}
+.sched.est .amt{color:var(--muted)}
+.sched .amt{font-weight:800;font-size:16px;text-align:right}
+.sched .amt small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.sched .act{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;font-size:13px;font-weight:700;color:var(--muted);padding:6px 11px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.filters input[type=search]{flex:1;min-width:160px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:700}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+.r{text-align:right}
+.t-title{font-weight:700}
+.t-sub{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+td .t-sub{max-width:300px;white-space:nowrap}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.badge.paid{background:var(--paid-soft);color:var(--paid)}
+.badge.pending{background:var(--pending-soft);color:var(--pending)}
+.badge.late{background:var(--danger-soft);color:var(--danger)}
+.badge.idle{background:var(--surface-2);color:var(--muted);border:1px dashed var(--line)}
+.row-actions{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.panel-foot{padding:10px 14px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--surface-2);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.panel-foot:empty{display:none}
+
+footer{margin:40px 0 48px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;color:var(--muted);font-size:13px}
+footer p{margin:0;max-width:560px}
+footer .btns{display:flex;gap:8px}
+
+dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100% - 32px));max-height:calc(100vh - 32px);background:var(--surface);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.28)}
+dialog::backdrop{background:rgba(20,22,26,.45)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:18px 20px 0}
+.dlg-head h2{margin:0;font-size:18px;font-weight:800}
+.dlg-body{padding:16px 20px}
+.dlg-body p{margin:0 0 8px}
+.dlg-foot{display:flex;justify-content:flex-end;gap:8px;padding:0 20px 20px;flex-wrap:wrap}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label,.flabel{font-size:13px;font-weight:700;color:var(--muted)}
+.field .row{display:flex;gap:6px;align-items:center}
+.field .row>input,.field .row>select{flex:1}
+.hint{font-size:12px;color:var(--muted)}
+.note-box{grid-column:1/-1;background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13px}
+.note-box b{font-variant-numeric:tabular-nums}
+.linkbtn{border:0;background:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;white-space:nowrap}
+.linkbtn.danger{color:var(--danger)}
+.items{display:flex;flex-direction:column;gap:6px}
+.item-row,.item-head{display:grid;grid-template-columns:1.5fr .8fr 1fr .9fr 30px;gap:6px;align-items:center}
+.item-head{font-size:12px;color:var(--muted)}
+.item-row input{padding:7px 8px;width:100%}
+.summary{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:0 0 14px;padding:14px 16px;background:var(--surface-2);border-radius:12px}
+.summary dt{color:var(--muted);font-size:14px}
+.summary dd{margin:0;text-align:right;font-weight:700}
+
+dialog{overflow:auto}
+a{color:var(--accent);font-weight:700}
+.sync-chip{margin-top:8px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:99px;padding:4px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+.sync-chip:hover{border-color:var(--accent);color:var(--accent)}
+.sync-chip[data-s="ok"]{color:var(--paid)}
+.sync-chip[data-s="error"]{color:var(--danger);border-color:var(--danger);background:var(--danger-soft)}
+.sync-chip[data-s="syncing"],.sync-chip[data-s="pending"]{color:var(--pending)}
+.steps{margin:0 0 12px;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.steps li::marker{font-weight:800;color:var(--accent)}
+.code{width:100%;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;height:110px;resize:vertical;background:var(--surface-2);margin-top:6px}
+.inline{display:flex;gap:6px;margin-top:6px}
+.inline input{flex:1}
+.msg{font-size:13px;margin:8px 0 0;min-height:1em}
+.msg.err{color:var(--danger)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:calc(100% - 32px);display:flex;gap:14px;align-items:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.show.has-action{pointer-events:auto}
+.toast button{border:0;background:none;color:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
+
+@media (max-width:820px){.works{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .stats{grid-template-columns:1fr 1fr}
+  .stat .num{font-size:21px}
+  .stat .num.text{font-size:16px}
+  .toolbar .btn{flex:1}
+  .month-nav{width:100%;justify-content:space-between}
+  .sched{grid-template-columns:54px minmax(0,1fr) auto}
+  .sched .act{grid-column:2/-1;justify-content:flex-start}
+  table.cards thead{display:none}
+  table.cards tr{display:block;padding:12px 14px;border-bottom:1px solid var(--line)}
+  table.cards tbody tr:last-child{border-bottom:0}
+  table.cards tbody tr:hover td{background:transparent}
+  table.cards td{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:3px 0;border:0;text-align:right}
+  table.cards td[data-label]::before{content:attr(data-label);color:var(--muted);font-size:12.5px;font-weight:500;text-align:left}
+  table.cards td.first{display:block;text-align:left;padding-bottom:6px}
+  table.cards td.acts{padding-top:8px}
+  table.cards .row-actions{justify-content:flex-start}
+  td .t-sub{max-width:none;white-space:normal}
+}
+@media (max-width:560px){
+  .form{grid-template-columns:1fr}
+  .field.full{grid-column:auto}
+  .item-row,.item-head{grid-template-columns:1.3fr .7fr 1fr .8fr 28px;gap:4px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="top-row">
+      <div>
+        <h1>接案收入管理</h1>
+        <p class="sub">記下每天的工作，結帳時按「結帳」，就知道每筆錢哪天入帳。</p>
+        <button class="sync-chip" id="syncChip" data-act="sync-chip" data-s="off">☁ 連結 Google 試算表</button>
+      </div>
+      <div class="month-nav">
+        <button class="icon" data-act="prev-month" aria-label="上個月">‹</button>
+        <input id="monthPicker" type="month" aria-label="統計月份">
+        <button class="icon" data-act="next-month" aria-label="下個月">›</button>
+        <button class="btn ghost sm" data-act="this-month">回到本月</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" data-act="add-entry">＋ 新增紀錄</button>
+      <button class="btn" data-act="add-work">＋ 新增工作</button>
+    </div>
+  </header>
+
+  <section class="stats" aria-label="月份統計">
+    <div class="stat hero"><div class="label"><span data-month-label></span>會入帳</div><div class="num" id="sPayMonth">$0</div><small id="sPayMonthSub"></small></div>
+    <div class="stat"><div class="label"><span data-month-label></span>做的工作</div><div class="num" id="sDone">$0</div><small id="sDoneSub"></small></div>
+    <div class="stat"><div class="label">還沒入帳（全部）</div><div class="num" id="sOut">$0</div><small id="sOutSub"></small></div>
+    <div class="stat"><div class="label">下一次發薪</div><div class="num text" id="sNext">—</div><small id="sNextSub"></small></div>
+  </section>
+
+  <section class="block">
+    <div class="sec-head"><h2>我的工作</h2><p>按卡片上的「＋」記下今天做的；對方結帳時按「結帳」</p></div>
+    <div class="works" id="works"></div>
+  </section>
+
+  <section class="block">
+    <div class="sec-head"><h2>發薪時間表</h2><p>收到薪水時按「收到了」，可以填實際入帳金額</p></div>
+    <div class="panel" id="schedule"></div>
+  </section>
+
+  <section class="block">
+    <div class="sec-head"><h2>工作紀錄</h2></div>
+    <div class="panel">
+      <div class="filters">
+        <div class="seg" role="group" aria-label="範圍">
+          <button data-act="scope" data-val="month" aria-pressed="true"><span data-month-label></span></button>
+          <button data-act="scope" data-val="all" aria-pressed="false">全部</button>
+        </div>
+        <select id="workFilter" aria-label="工作"><option value="all">所有工作</option></select>
+        <select id="statusFilter" aria-label="狀態"><option value="all">所有狀態</option><option value="est">未結帳</option><option value="billed">已結帳・待入帳</option><option value="paid">已入帳</option></select>
+        <input id="searchInput" type="search" placeholder="搜尋備註">
+      </div>
+      <table class="cards">
+        <thead><tr><th>日期</th><th>工作／項目</th><th class="r">數量</th><th class="r">金額</th><th>狀態</th><th></th></tr></thead>
+        <tbody id="entryRows"></tbody>
+      </table>
+      <div class="panel-foot" id="entryFoot"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>資料只存在這個瀏覽器裡。換裝置、換瀏覽器或清除瀏覽資料前，記得先「匯出備份」。</p>
+    <div class="btns">
+      <button class="btn sm" data-act="export">匯出備份</button>
+      <button class="btn sm" data-act="import">匯入備份</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+  </footer>
+</div>
+
+<dialog id="formDlg">
+  <form id="form">
+    <div class="dlg-head"><h2 id="formTitle"></h2><button type="button" class="btn ghost sm" data-act="close-form" aria-label="關閉">✕</button></div>
+    <div class="dlg-body"><div class="form" id="formFields"></div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-act="close-form">取消</button><button type="submit" class="btn primary" id="formSubmit">儲存</button></div>
+  </form>
+</dialog>
+<dialog id="askDlg">
+  <div class="dlg-head"><h2 id="askTitle"></h2></div>
+  <div class="dlg-body" id="askBody"></div>
+  <div class="dlg-foot" id="askFoot"></div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- 貼到 Google 試算表 Apps Script 的程式（__TOKEN__ 會換成你的密碼） -->
+<script type="text/plain" id="gasSource">// 接案收入管理 × Google 試算表
+// 這段程式讓網頁可以把資料存進這份試算表。請不要分享部署網址和這段密碼。
+var TOKEN = '__TOKEN__';
+var DATA_SHEET = '_data';
+var ORDER = ['工作紀錄', '帳單', '每月彙總', '工作設定'];
+
+function doGet(e) { return run_(e && e.parameter ? e.parameter : {}); }
+function doPost(e) {
+  var p = {};
+  try { p = JSON.parse(e.postData.contents); } catch (err) {}
+  return run_(p);
+}
+
+function run_(p) {
+  if (p.token !== TOKEN) return out_({ ok: false, error: 'bad_token' });
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sh = ss.getSheetByName(DATA_SHEET);
+    if (!sh) { sh = ss.insertSheet(DATA_SHEET); sh.hideSheet(); }
+    var rev = Number(sh.getRange('A1').getValue()) || 0;
+
+    if (p.action === 'get') {
+      return out_({ ok: true, rev: rev, updatedAt: String(sh.getRange('A2').getValue() || ''), data: readData_(sh), sheetUrl: ss.getUrl() });
+    }
+
+    if (p.action === 'save') {
+      if (rev > 0 && Number(p.baseRev) !== rev) {
+        return out_({ ok: false, conflict: true, rev: rev, data: readData_(sh) });
+      }
+      var s = JSON.stringify(p.data), chunks = [];
+      for (var i = 0; i < s.length; i += 45000) chunks.push(['x' + s.slice(i, i + 45000)]);
+      var last = sh.getLastRow();
+      if (last >= 3) sh.getRange(3, 1, last - 2, 1).clearContent();
+      if (chunks.length) sh.getRange(3, 1, chunks.length, 1).setNumberFormat('@').setValues(chunks);
+      rev += 1;
+      sh.getRange('A1').setValue(rev);
+      sh.getRange('A2').setNumberFormat('@').setValue(new Date().toISOString());
+      (p.tables || []).forEach(function (t) { writeTable_(ss, t); });
+      cleanup_(ss);
+      return out_({ ok: true, rev: rev, sheetUrl: ss.getUrl() });
+    }
+    return out_({ ok: false, error: 'bad_action' });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function readData_(sh) {
+  var n = sh.getLastRow();
+  if (n < 3) return null;
+  var json = sh.getRange(3, 1, n - 2, 1).getValues()
+    .map(function (r) { return String(r[0]).slice(1); }).join('');
+  return json ? JSON.parse(json) : null;
+}
+
+function writeTable_(ss, t) {
+  var sh = ss.getSheetByName(t.name);
+  if (!sh) {
+    sh = ss.insertSheet(t.name);
+    var pos = ORDER.indexOf(t.name);
+    if (pos >= 0) { ss.setActiveSheet(sh); ss.moveActiveSheet(Math.min(pos + 1, ss.getSheets().length)); }
+  }
+  sh.clear();
+  var w = t.headers.length;
+  sh.getRange(1, 1, 1, w).setValues([t.headers]).setFontWeight('bold').setBackground('#e3efe9');
+  sh.setFrozenRows(1);
+  if (t.rows.length) {
+    var r = sh.getRange(2, 1, t.rows.length, w);
+    r.setNumberFormats(t.rows.map(function () { return t.formats; }));
+    r.setValues(t.rows);
+  }
+  sh.autoResizeColumns(1, w);
+}
+
+// 刪掉新試算表預設的空白工作表
+function cleanup_(ss) {
+  ['工作表1', 'Sheet1'].forEach(function (name) {
+    var sh = ss.getSheetByName(name);
+    if (sh && sh.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(sh);
+  });
+}
+
+function out_(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+</script>
+
+<script>
+const KEY='freelanceIncomeManagerV3',OLD_KEY='freelanceIncomeManagerV1';
+const WD=['日','一','二','三','四','五','六'];
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const dstr=t=>`${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
+const today=()=>dstr(new Date());
+const thisMonth=()=>today().slice(0,7);
+const ym=s=>String(s||'').slice(0,7);
+const isDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const fmt=new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0});
+const money=n=>fmt.format(Number(n)||0);
+const num=n=>String(Math.round((Number(n)||0)*100)/100);
+const sum=(arr,f)=>arr.reduce((s,e)=>s+(Number(typeof f==='function'?f(e):e[f])||0),0);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const parts=s=>{const[y,m,d]=s.split('-').map(Number);return{y,m,d}};
+const lastDay=(y,m)=>new Date(y,m,0).getDate();
+const addMonths=(key,n)=>{const[y,m]=key.split('-').map(Number);const t=new Date(y,m-1+n,1);return `${t.getFullYear()}-${pad(t.getMonth()+1)}`};
+const addDays=(s,n)=>{const{y,m,d}=parts(s);return dstr(new Date(y,m-1,d+n))};
+const md=s=>{if(!isDate(s))return '—';const{m,d}=parts(s);return `${m}/${d}`};
+const wd=s=>{const{y,m,d}=parts(s);return WD[new Date(y,m-1,d).getDay()]};
+const mdw=s=>isDate(s)?`${md(s)}（${wd(s)}）`:'—';
+const fmtMonth=m=>{const[y,mo]=m.split('-');return `${y} 年 ${Number(mo)} 月`};
+const shortMonth=m=>`${Number(m.split('-')[1])} 月`;
+const clampInt=(v,a,b,def)=>{const n=parseInt(v,10);return Number.isFinite(n)?Math.min(b,Math.max(a,n)):def};
+
+let state={version:3,works:[],entries:[],statements:[]};
+let scope='month',formHandler=null;
+
+/* ============ 規則 ============
+   帳單（結帳）：你按「結帳」時選起訖日、填對方確認的金額。
+   發薪日 = 帳單最後一天所在月份 + payOffset 個月，第 payDay 天。
+     例：早安健康 9/14–10/12 → 10 月 + 隔月 → 11/10
+   還沒結帳的紀錄，用「預估結算日」cutoff 推估會落在哪一期。 */
+function periodOf(w,date){
+  const{y,m,d}=parts(date),k=`${y}-${pad(m)}`;
+  if(w.cutoff==='end')return k;
+  return d<=w.cutoff?k:addMonths(k,1);
+}
+function payday(w,monthKey){
+  const k=addMonths(monthKey,w.payOffset),[y,m]=k.split('-').map(Number),L=lastDay(y,m);
+  return `${k}-${pad(w.payDay==='end'?L:Math.min(w.payDay,L))}`;
+}
+const payRule=w=>`${w.payOffset?'隔月':'當月'}${w.payDay==='end'?'最後一天':` ${w.payDay} 號`}發薪`;
+const ruleText=w=>`約${w.cutoff==='end'?'月底':` ${w.cutoff} 號`}結帳 · ${payRule(w)}`;
+const getWork=id=>state.works.find(w=>w.id===id);
+const getItem=(w,id)=>w?.items.find(i=>i.id===id);
+const getStmt=id=>state.statements.find(s=>s.id===id);
+const stmtsOf=w=>state.statements.filter(s=>s.workId===w.id).sort((a,b)=>b.end.localeCompare(a.end));
+const lastStmt=w=>stmtsOf(w)[0];
+function estMonth(w,date){
+  let k=periodOf(w,date);const l=lastStmt(w);
+  if(l&&k<=ym(l.end))k=addMonths(ym(l.end),1);
+  return k;
+}
+function entryStatus(e){
+  const s=e.statementId&&getStmt(e.statementId);
+  if(s)return s.paidDate?{k:'paid',date:s.paidDate,s}:{k:'billed',date:s.payday,s};
+  const w=getWork(e.workId);
+  return{k:'est',date:w&&isDate(e.date)?payday(w,estMonth(w,e.date)):''};
+}
+const stmtValue=s=>s.paidDate?s.paidAmount:s.amount;
+
+/* ============ 資料 ============ */
+function item(name,unit,price,quick=1,hint=''){return{id:uid(),name,unit,price,quick,hint}}
+// 第一次打開：你的四份工作＋你提供的實際資料（2026/10/29）
+function seed(){
+  const a=item('稿件','篇',300),b=item('排班','小時',200,8,'一班 8 小時'),c=item('稿件','篇',450),d1=item('剪片','隻',1600),d2=item('拍攝','場',5000);
+  const W=[
+    {id:uid(),name:'早安健康',kind:'接案',items:[a],weeklyTarget:6,cutoff:20,payOffset:1,payDay:10},
+    {id:uid(),name:'科技報橘',kind:'排班・兼職',items:[b],weeklyTarget:0,cutoff:20,payOffset:1,payDay:5},
+    {id:uid(),name:'米粒廣告',kind:'接案',items:[c],weeklyTarget:3,cutoff:'end',payOffset:1,payDay:'end'},
+    {id:uid(),name:'法可夢',kind:'接案',items:[d1,d2],weeklyTarget:0,cutoff:'end',payOffset:1,payDay:7}];
+  const E=[],S=[];
+  const en=(w,it,date,qty,note='')=>E.push({id:uid(),workId:w.id,itemId:it.id,date,qty,amount:Math.round(it.price*qty),cost:0,note,statementId:''});
+  const st=(w,start,end,amount)=>S.push({id:uid(),workId:w.id,start,end,amount,payday:payday(w,ym(end)),note:'',paidDate:'',paidAmount:0});
+  st(W[0],'2026-09-14','2026-10-12',18600);
+  en(W[0],a,'2026-10-19',6,'10/19 這週寫滿');en(W[0],a,'2026-10-26',6,'10/26 這週寫滿');
+  st(W[1],'2026-09-22','2026-10-19',12400);
+  en(W[1],b,'2026-10-23',8);en(W[1],b,'2026-10-27',8);
+  st(W[2],'2026-09-06','2026-09-29',5400);
+  for(const d of['2026-10-01','2026-10-08','2026-10-15','2026-10-23'])en(W[2],c,d,3,'這週寫滿');
+  en(W[3],d1,'2026-10-29',2,'10 月剪輯（日期可改）');en(W[3],d2,'2026-10-29',1,'10 月拍攝（日期可改）');
+  return{version:3,works:W,entries:E,statements:S};
+}
+function normWork(w){
+  const items=(Array.isArray(w.items)?w.items:[]).filter(i=>i&&i.id).map(i=>({id:String(i.id),name:String(i.name||'項目'),unit:String(i.unit||'件'),price:Number(i.price)||0,quick:Number(i.quick)>0?Number(i.quick):1,hint:String(i.hint||'')}));
+  return{id:String(w.id),name:String(w.name||'未命名工作'),kind:String(w.kind||'接案'),
+    items:items.length?items:[item('案件','件',0)],weeklyTarget:Math.max(0,Number(w.weeklyTarget)||0),
+    cutoff:w.cutoff==='end'?'end':clampInt(w.cutoff,1,28,20),payOffset:Number(w.payOffset)?1:0,
+    payDay:w.payDay==='end'?'end':clampInt(w.payDay,1,31,10)};
+}
+function normalize(x){
+  const arr=a=>Array.isArray(a)?a:[];
+  const n={version:3,
+    works:arr(x.works).filter(w=>w&&w.id).map(normWork),
+    statements:arr(x.statements).filter(s=>s&&s.id&&isDate(s.start)&&isDate(s.end)).map(s=>({id:String(s.id),workId:String(s.workId||''),start:s.start,end:s.end,amount:Math.round(Number(s.amount)||0),payday:isDate(s.payday)?s.payday:'',note:String(s.note||''),paidDate:isDate(s.paidDate)?s.paidDate:'',paidAmount:Math.round(Number(s.paidAmount)||0)})),
+    entries:arr(x.entries).filter(e=>e&&e.id).map(e=>({id:String(e.id),workId:String(e.workId||''),itemId:String(e.itemId||''),date:String(e.date||''),qty:Number(e.qty)||0,amount:Math.round(Number(e.amount)||0),cost:Math.round(Number(e.cost)||0),note:String(e.note||''),statementId:String(e.statementId||'')}))};
+  n.statements.forEach(s=>{if(!s.payday){const w=n.works.find(w=>w.id===s.workId);if(w)s.payday=payday(w,ym(s.end))}});
+  return n;
+}
+// 舊版資料（v1 每筆一個金額／v2）轉成新版；已入帳的依入帳日整理成已入帳帳單
+function fromLegacy(x){
+  const v2=x.works.some(w=>Array.isArray(w.items));
+  const works=[],entries=[],statements=[];
+  for(const w of x.works){
+    const es=x.entries.filter(e=>e&&e.workId===w.id);
+    if(!v2&&!es.length)continue;
+    const nw=v2?normWork(w):normWork({id:w.id,name:'舊版：'+(w.name||'工作'),kind:'舊版紀錄',items:[item('案件','件',0)],cutoff:'end',payOffset:1,payDay:10});
+    works.push(nw);
+    const paidGroups=new Map();
+    for(const e of es){
+      const ne={id:String(e.id||uid()),workId:nw.id,itemId:v2?String(e.itemId||''):nw.items[0].id,date:String(e.date||''),qty:v2?Number(e.qty)||0:1,amount:Math.round(Number(e.amount)||0),cost:Math.round(Number(e.cost)||0),note:v2?String(e.note||''):[e.title,e.note].filter(Boolean).join(' · '),statementId:''};
+      entries.push(ne);
+      const pd=e.paidDate||e.depositDate;
+      if(isDate(pd)&&isDate(ne.date)){if(!paidGroups.has(pd))paidGroups.set(pd,[]);paidGroups.get(pd).push(ne)}
+    }
+    for(const[pd,g]of paidGroups){
+      const ds=g.map(e=>e.date).sort(),amt=sum(g,'amount'),s={id:uid(),workId:nw.id,start:ds[0],end:ds[ds.length-1],amount:amt,payday:pd,note:'舊資料',paidDate:pd,paidAmount:amt};
+      statements.push(s);g.forEach(e=>e.statementId=s.id);
+    }
+  }
+  return{works,entries,statements};
+}
+function load(){
+  let raw=null;try{raw=localStorage.getItem(KEY)}catch(e){}
+  if(raw){
+    try{state=normalize(JSON.parse(raw))}
+    catch(e){try{localStorage.setItem(KEY+'_broken_'+Date.now(),raw)}catch(_){}state=seed();setTimeout(()=>toast('資料讀取失敗，已另存一份；可用「匯入備份」還原。'),300)}
+  }else{
+    state=seed();
+    let old=null;try{old=JSON.parse(localStorage.getItem(OLD_KEY))}catch(e){}
+    if(old&&Array.isArray(old.works)&&Array.isArray(old.entries)&&old.entries.length){
+      const c=fromLegacy(old);state.works.push(...c.works);state.entries.push(...c.entries);state.statements.push(...c.statements);
+      setTimeout(()=>toast(`已把最早版本的 ${c.entries.length} 筆紀錄搬過來（名稱開頭是「舊版：」）`),300);
+    }
+    persist();
+  }
+  $('monthPicker').value=thisMonth();
+  render();
+}
+function persist(){
+  try{localStorage.setItem(KEY,JSON.stringify(state));return true}
+  catch(e){toast('儲存失敗：瀏覽器可能封鎖了本機儲存，請先匯出備份。');return false}
+}
+function save(){persist();render();schedulePush()}
+const curMonth=()=>{const v=$('monthPicker').value;return /^\d{4}-\d{2}$/.test(v)?v:thisMonth()};
+function setMonth(m){$('monthPicker').value=m;render()}
+
+/* ============ 計算 ============ */
+function estGroups(){
+  const map=new Map();
+  for(const e of state.entries){
+    if(e.statementId||!isDate(e.date))continue;
+    const w=getWork(e.workId);if(!w)continue;
+    const k=estMonth(w,e.date),key=w.id+'|'+k;
+    if(!map.has(key))map.set(key,{work:w,month:k,payday:payday(w,k),entries:[]});
+    map.get(key).entries.push(e);
+  }
+  return[...map.values()].map(g=>({...g,amount:sum(g.entries,'amount')})).sort((a,b)=>a.payday.localeCompare(b.payday));
+}
+function qtySummary(entries,w){
+  const m=new Map();
+  for(const e of entries){const it=getItem(w,e.itemId);const k=it?it.id:'?';m.set(k,(m.get(k)||0)+(Number(e.qty)||0))}
+  return[...m].map(([id,q])=>{const it=getItem(w,id);return it?`${it.name} ${num(q)} ${it.unit}`:`${num(q)} 件`}).join('・');
+}
+function weekRange(){
+  const t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7));
+  return[dstr(mon),addDays(dstr(mon),6)];
+}
+
+/* ============ 畫面 ============ */
+function render(){
+  const month=curMonth();
+  document.querySelectorAll('[data-month-label]').forEach(el=>el.textContent=shortMonth(month));
+  renderStats(month);renderWorks();renderSchedule(month);renderEntries(month);
+}
+
+function renderStats(month){
+  const t=today(),S=state.statements,est=estGroups();
+  const inMonth=S.filter(s=>ym(s.paidDate||s.payday)===month);
+  const estIn=est.filter(g=>ym(g.payday)===month);
+  const received=sum(S.filter(s=>ym(s.paidDate)===month),'paidAmount');
+  $('sPayMonth').textContent=money(sum(inMonth,stmtValue)+sum(estIn,'amount'));
+  $('sPayMonthSub').textContent=`已收到 ${money(received)}`+(estIn.length?` · 含預估 ${money(sum(estIn,'amount'))}`:'');
+  const done=state.entries.filter(e=>ym(e.date)===month);
+  $('sDone').textContent=money(sum(done,'amount'));
+  $('sDoneSub').textContent=`依工作日期 · 共 ${done.length} 筆`;
+  const billed=S.filter(s=>!s.paidDate),unbilled=state.entries.filter(e=>!e.statementId);
+  $('sOut').textContent=money(sum(billed,'amount')+sum(unbilled,'amount'));
+  $('sOutSub').textContent=`已結帳 ${money(sum(billed,'amount'))} · 未結帳 ${money(sum(unbilled,'amount'))}`;
+  const next=billed.filter(s=>s.payday>=t).sort((a,b)=>a.payday.localeCompare(b.payday))[0];
+  if(next){
+    const same=billed.filter(s=>s.payday===next.payday);
+    $('sNext').textContent=mdw(next.payday);
+    $('sNextSub').textContent=`${same.map(s=>getWork(s.workId)?.name||'').join('、')} · ${money(sum(same,'amount'))}`;
+  }else{
+    const g=est.find(g=>g.payday>=t);
+    $('sNext').textContent=g?mdw(g.payday):'—';
+    $('sNextSub').textContent=g?`${g.work.name}（預估）· ${money(g.amount)}`:'目前沒有待發的薪水';
+  }
+}
+
+function renderWorks(){
+  const t=today(),[wk1,wk2]=weekRange();
+  $('works').innerHTML=state.works.map(w=>{
+    const id=esc(w.id),l=lastStmt(w);
+    const ub=state.entries.filter(x=>x.workId===w.id&&!x.statementId&&isDate(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+    const first=ub[0]?.date;
+    const since=l?addDays(l.end,1):first?(w.cutoff==='end'?ym(first)+'-01':first):t;
+    const estPd=payday(w,estMonth(w,ub[0]?.date||t));
+    let goal='';
+    if(w.weeklyTarget>0){
+      const it=w.items[0],q=sum(state.entries.filter(x=>x.workId===w.id&&x.itemId===it.id&&x.date>=wk1&&x.date<=wk2),'qty');
+      goal=`<div class="goal"><div class="row"><span>本週（${md(wk1)}–${md(wk2)}）${esc(it.name)}</span><span><b>${num(q)}</b> / ${num(w.weeklyTarget)} ${esc(it.unit)}</span></div><div class="bar"><i style="width:${Math.min(100,Math.round(q/w.weeklyTarget*100))}%"></i></div></div>`;
+    }
+    const last=l?`<div class="laststmt">上次結帳 ${md(l.start)}–${md(l.end)} · ${money(stmtValue(l))} ${l.paidDate?`<span class="badge paid">${md(l.paidDate)} 已入帳</span>`:`<span class="badge ${l.payday<t?'late':'pending'}">${mdw(l.payday)} 發薪</span>`}</div>`:'';
+    const quicks=w.items.map(it=>`<button class="quick" data-act="quick" data-work="${id}" data-item="${esc(it.id)}"><b>＋ ${esc(it.name)}</b><small>${it.hint?esc(it.hint):`${num(it.quick)} ${esc(it.unit)}`} · ${money(it.price*it.quick)}</small></button>`).join('');
+    return `<article class="work">
+      <div class="work-head"><div><h3>${esc(w.name)}</h3><p class="meta">${esc(ruleText(w))}</p></div><span class="pill">${esc(w.kind)}</span></div>
+      <div class="period">
+        <div><div class="lbl">未結帳（${md(since)} 起）· ${ub.length?esc(qtySummary(ub,w)):'還沒有紀錄'}</div><div class="amt">${money(sum(ub,'amount'))}</div></div>
+        <div class="pay">預估發薪<b>${mdw(estPd)}</b></div>
+      </div>
+      ${last}${goal}
+      <div class="quicks">${quicks}</div>
+      <div class="work-actions">
+        <button class="btn soft sm" data-act="bill" data-id="${id}">結帳</button>
+        <button class="btn ghost sm" data-act="add-entry" data-id="${id}">其他日期／數量</button>
+        <span class="spacer"></span>
+        <button class="btn ghost sm" data-act="edit-work" data-id="${id}">編輯</button>
+        <button class="btn ghost sm danger" data-act="del-work" data-id="${id}">刪除</button>
+      </div>
+    </article>`;
+  }).join('')||'<div class="empty">還沒有工作，按「新增工作」開始。</div>';
+}
+
+function renderSchedule(month){
+  const t=today();
+  const billed=state.statements.filter(s=>!s.paidDate).sort((a,b)=>a.payday.localeCompare(b.payday));
+  const est=estGroups();
+  const paid=state.statements.filter(s=>ym(s.paidDate)===month).sort((a,b)=>a.paidDate.localeCompare(b.paidDate));
+  const row=(cls,date,title,sub,badge,amt,act)=>`<div class="sched ${cls}"><div class="dbox"><b>${md(date)}</b><span>週${wd(date)}</span></div><div><div class="t-title">${title}</div><div class="t-sub">${sub}</div>${badge?`<div style="margin-top:4px">${badge}</div>`:''}</div><div class="amt money">${amt}</div><div class="act">${act}</div></div>`;
+  let html='';
+  if(billed.length){
+    html+=`<div class="subhead"><span>已結帳・等發薪</span><span>${money(sum(billed,'amount'))}</span></div>`+billed.map(s=>{
+      const w=getWork(s.workId),late=s.payday<t,n=state.entries.filter(e=>e.statementId===s.id);
+      return row(late?'late':'',s.payday,esc(w?.name||'已刪除的工作'),`${md(s.start)}–${md(s.end)}${n.length?' · '+esc(qtySummary(n,w)):''}${s.note?' · '+esc(s.note):''}`,
+        late?'<span class="badge late">已過發薪日</span>':'',money(s.amount),
+        `<button class="btn soft sm" data-act="receive" data-id="${esc(s.id)}">收到了</button><button class="btn ghost sm" data-act="edit-stmt" data-id="${esc(s.id)}">編輯</button>`);
+    }).join('');
+  }
+  if(est.length){
+    html+=`<div class="subhead"><span>還沒結帳（預估）</span><span>${money(sum(est,'amount'))}</span></div>`+est.map(g=>{
+      const ds=g.entries.map(e=>e.date).sort();
+      return row('est',g.payday,esc(g.work.name),`${md(ds[0])}–${md(ds[ds.length-1])} 的紀錄 · ${esc(qtySummary(g.entries,g.work))}`,'',money(g.amount),
+        `<button class="btn ghost sm" data-act="bill" data-id="${esc(g.work.id)}">結帳</button>`);
+    }).join('');
+  }
+  if(paid.length){
+    html+=`<div class="subhead"><span>${fmtMonth(month)}已收到</span><span>${money(sum(paid,'paidAmount'))}</span></div>`+paid.map(s=>{
+      const w=getWork(s.workId),diff=s.paidAmount-s.amount;
+      return row('paid',s.paidDate,esc(w?.name||'已刪除的工作'),`${md(s.start)}–${md(s.end)} 的薪水`,'',
+        `${money(s.paidAmount)}${diff?`<small>應收 ${money(s.amount)}（${diff<0?'少':'多'} ${money(Math.abs(diff))}）</small>`:''}`,
+        `<button class="btn ghost sm" data-act="undo-paid" data-id="${esc(s.id)}">取消入帳</button>`);
+    }).join('');
+  }
+  $('schedule').innerHTML=html||'<div class="empty">目前沒有等待入帳的薪水。</div>';
+}
+
+function renderEntries(month){
+  const sel=$('workFilter'),prev=sel.value;
+  sel.innerHTML='<option value="all">所有工作</option>'+state.works.map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('');
+  sel.value=state.works.some(w=>w.id===prev)?prev:'all';
+  document.querySelectorAll('[data-act="scope"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.val===scope)));
+  const wf=sel.value,sf=$('statusFilter').value,q=$('searchInput').value.trim().toLowerCase(),t=today();
+  const rows=state.entries.map(e=>({e,st:entryStatus(e)})).filter(({e,st})=>
+    (scope==='all'||ym(e.date)===month)&&(wf==='all'||e.workId===wf)&&(sf==='all'||st.k===sf)&&(!q||e.note.toLowerCase().includes(q))
+  ).sort((a,b)=>(b.e.date||'').localeCompare(a.e.date||''));
+  if(!rows.length){
+    $('entryRows').innerHTML=`<tr><td colspan="6" class="empty">${state.entries.length?'沒有符合條件的紀錄。':'還沒有紀錄。按工作卡片上的「＋」就能記下今天的工作。'}</td></tr>`;
+    $('entryFoot').innerHTML='';return;
+  }
+  $('entryRows').innerHTML=rows.map(({e,st})=>{
+    const w=getWork(e.workId),it=getItem(w,e.itemId),id=esc(e.id);
+    const badge=st.k==='paid'?`<span class="badge paid">已入帳 ${md(st.date)}</span>`
+      :st.k==='billed'?`<span class="badge ${st.date<t?'late':'pending'}">已結帳・${mdw(st.date)} 發薪</span>`
+      :`<span class="badge idle">未結帳・預估 ${mdw(st.date)}</span>`;
+    return `<tr>
+      <td class="first"><div class="t-title">${mdw(e.date)}</div></td>
+      <td data-label="工作"><div><div>${esc(w?.name||'已刪除的工作')} · ${esc(it?.name||'項目')}</div>${e.note?`<div class="t-sub">${esc(e.note)}</div>`:''}</div></td>
+      <td data-label="數量" class="r">${num(e.qty)} ${esc(it?.unit||'')}</td>
+      <td data-label="金額" class="r money"><strong>${money(e.amount)}</strong>${e.cost?`<div class="t-sub">成本 ${money(e.cost)}</div>`:''}</td>
+      <td data-label="狀態">${badge}</td>
+      <td class="acts"><div class="row-actions">
+        <button class="btn ghost sm" data-act="edit-entry" data-id="${id}">編輯</button>
+        <button class="btn ghost sm danger" data-act="del-entry" data-id="${id}">刪除</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  $('entryFoot').innerHTML=`<span>共 ${rows.length} 筆 · 合計 ${money(sum(rows,r=>r.e.amount))}</span>`;
+}
+
+/* ============ 對話框 ============ */
+function openForm(title,html,submitLabel,handler){
+  $('formTitle').textContent=title;$('formFields').innerHTML=html;$('formSubmit').textContent=submitLabel;
+  formHandler=handler;$('formDlg').showModal();
+}
+$('form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=Object.fromEntries(new FormData(e.target));
+  if(formHandler&&formHandler(v)!==false)$('formDlg').close();
+});
+function ask(title,body,buttons,cancelLabel='取消'){
+  return new Promise(res=>{
+    const d=$('askDlg');
+    $('askTitle').textContent=title;$('askBody').innerHTML=body;$('askFoot').innerHTML='';
+    [{label:cancelLabel,value:null},...buttons].forEach(b=>{
+      const el=document.createElement('button');el.type='button';el.className='btn '+(b.cls||'');el.textContent=b.label;
+      el.onclick=()=>{res(b.value);d.close()};$('askFoot').append(el);
+    });
+    d.onclose=()=>{if(!d.open)res(null)};   // 忽略前一個視窗遲到的關閉事件
+    if(!d.open)d.showModal();
+  });
+}
+for(const d of [$('formDlg'),$('askDlg')]){
+  let downOn=null;
+  d.addEventListener('pointerdown',e=>downOn=e.target);
+  d.addEventListener('click',e=>{if(e.target===d&&downOn===d)d.close()});
+}
+let toastTimer;
+function toast(msg,undo){
+  const t=$('toast');t.innerHTML=`<span>${esc(msg)}</span>`;
+  if(undo){const b=document.createElement('button');b.textContent='復原';b.onclick=()=>{undo();t.classList.remove('show')};t.append(b)}
+  t.classList.toggle('has-action',!!undo);t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),undo?5000:2800);
+}
+
+/* ============ 工作 ============ */
+function itemRow(i){
+  return `<div class="item-row" data-iid="${esc(i.id||'')}">
+    <input class="i-name" placeholder="如 稿件" value="${esc(i.name||'')}" aria-label="項目名稱">
+    <input class="i-unit" placeholder="篇" value="${esc(i.unit||'')}" aria-label="單位">
+    <input class="i-price" type="number" min="0" step="1" placeholder="0" value="${esc(i.price??'')}" aria-label="單價">
+    <input class="i-quick" type="number" min="0.5" step="0.5" value="${esc(i.quick??1)}" aria-label="按一下記幾個">
+    <button type="button" class="btn ghost sm danger" data-act="del-item-row" aria-label="移除項目">✕</button>
+  </div>`;
+}
+function workForm(id){
+  const old=getWork(id),w=old||{name:'',kind:'接案',items:[{id:'',name:'',unit:'篇',price:'',quick:1}],weeklyTarget:0,cutoff:20,payOffset:1,payDay:10};
+  const opt=(v,label,cur)=>`<option value="${v}" ${String(cur)===String(v)?'selected':''}>${label}</option>`;
+  const days=n=>Array.from({length:n},(_,i)=>i+1);
+  openForm(old?'編輯工作':'新增工作',`
+    <div class="field"><label for="f_name">工作名稱</label><input id="f_name" name="name" value="${esc(w.name)}" required maxlength="30" autofocus></div>
+    <div class="field"><label for="f_kind">類型</label><input id="f_kind" name="kind" value="${esc(w.kind)}" maxlength="20" placeholder="接案／排班"></div>
+    <div class="field full"><span class="flabel">計費項目</span>
+      <div class="items">
+        <div class="item-head"><span>項目</span><span>單位</span><span>單價</span><span>按一下記</span><span></span></div>
+        <div id="itemRows" class="items">${w.items.map(itemRow).join('')}</div>
+      </div>
+      <div class="row" style="justify-content:space-between"><span class="hint">「按一下記」＝卡片按鈕一按記幾個，例如排班一次 8 小時。改單價只影響之後的紀錄。</span><button type="button" class="linkbtn" data-act="add-item-row">＋ 加一個項目</button></div>
+    </div>
+    <div class="field"><label for="f_payOffset">發薪日</label><div class="row"><select id="f_payOffset" name="payOffset" style="flex:.8">${opt(0,'當月',w.payOffset)}${opt(1,'隔月',w.payOffset)}</select><select name="payDay" aria-label="發薪日">${days(31).map(d=>opt(d,`${d} 號`,w.payDay)).join('')}${opt('end','最後一天',w.payDay)}</select></div><span class="hint">以帳單最後一天的月份來算</span></div>
+    <div class="field"><label for="f_cutoff">大約幾號結帳</label><select id="f_cutoff" name="cutoff">${days(28).map(d=>opt(d,`${d} 號左右`,w.cutoff)).join('')}${opt('end','月底',w.cutoff)}</select><span class="hint">只用來預估還沒結帳的部分</span></div>
+    <div class="field full"><label for="f_weekly">每週目標（以第一個項目計算，0＝不設定）</label><input id="f_weekly" name="weeklyTarget" type="number" min="0" step="1" value="${esc(w.weeklyTarget||0)}"></div>`,
+    old?'儲存':'新增',v=>{
+      const name=v.name.trim();if(!name){toast('請輸入工作名稱');return false}
+      const rows=[...$('itemRows').querySelectorAll('.item-row')].map(r=>({
+        id:r.dataset.iid||uid(),name:r.querySelector('.i-name').value.trim(),unit:r.querySelector('.i-unit').value.trim()||'件',
+        price:Math.round(Number(r.querySelector('.i-price').value)||0),quick:Number(r.querySelector('.i-quick').value)>0?Number(r.querySelector('.i-quick').value):1
+      })).filter(i=>i.name);
+      if(!rows.length){toast('至少要有一個計費項目');return false}
+      if(old){
+        const removed=old.items.filter(i=>!rows.some(r=>r.id===i.id));
+        if(removed.some(i=>state.entries.some(e=>e.itemId===i.id))){toast('已經有紀錄的項目不能移除');return false}
+        rows.forEach(r=>{const o=getItem(old,r.id);r.hint=o&&o.price===r.price&&o.quick===r.quick?o.hint:''});
+      }else rows.forEach(r=>r.hint='');
+      const data={name,kind:v.kind.trim()||'接案',items:rows,weeklyTarget:Math.max(0,Number(v.weeklyTarget)||0),
+        cutoff:v.cutoff==='end'?'end':Number(v.cutoff),payOffset:Number(v.payOffset),payDay:v.payDay==='end'?'end':Number(v.payDay)};
+      if(old)Object.assign(old,data);else state.works.push({id:uid(),...data});
+      save();toast(old?'已更新工作（已結帳的發薪日不會變）':'已新增工作');
+    });
+}
+async function deleteWork(id){
+  const w=getWork(id);if(!w)return;
+  const n=state.entries.filter(e=>e.workId===id).length,m=state.statements.filter(s=>s.workId===id).length;
+  if(await ask('刪除工作',`<p>確定刪除「${esc(w.name)}」？</p>${n||m?`<p class="hint" style="color:var(--danger)">這份工作的 ${n} 筆紀錄、${m} 張帳單會一起刪除，無法復原。</p>`:''}`,[{label:'刪除',value:true,cls:'danger-solid'}])){
+    state.works=state.works.filter(x=>x.id!==id);
+    state.entries=state.entries.filter(e=>e.workId!==id);
+    state.statements=state.statements.filter(s=>s.workId!==id);
+    save();toast('已刪除工作');
+  }
+}
+
+/* ============ 紀錄 ============ */
+function quickAdd(workId,itemId){
+  const w=getWork(workId),it=getItem(w,itemId);if(!it)return;
+  const e={id:uid(),workId,itemId,date:today(),qty:it.quick,amount:Math.round(it.price*it.quick),cost:0,note:'',statementId:''};
+  state.entries.push(e);save();
+  toast(`已記下 ${w.name}・${it.name} ${num(it.quick)} ${it.unit}（${money(e.amount)}）`,()=>{state.entries=state.entries.filter(x=>x.id!==e.id);save()});
+}
+function entryForm({id=null,workId=null}={}){
+  if(!state.works.length){toast('請先新增一份工作');workForm();return}
+  const ex=state.entries.find(x=>x.id===id);
+  const wf=$('workFilter').value;
+  const e=ex||{workId:workId||(wf!=='all'?wf:'')||state.works[0].id,itemId:'',date:today(),qty:'',amount:'',cost:'',note:'',statementId:''};
+  const w0=getWork(e.workId)||state.works[0];
+  const opts=state.works.map(w=>`<option value="${esc(w.id)}" ${w.id===w0.id?'selected':''}>${esc(w.name)}</option>`).join('');
+  openForm(ex?'編輯紀錄':'新增紀錄',`
+    <div class="field"><label for="f_workId">工作</label><select id="f_workId" name="workId" required ${ex&&ex.statementId?'disabled':''}>${opts}</select>${ex&&ex.statementId?`<input type="hidden" name="workId" value="${esc(ex.workId)}">`:''}</div>
+    <div class="field"><label for="f_itemId">項目</label><select id="f_itemId" name="itemId" required></select></div>
+    <div class="field"><label for="f_date">工作日期</label><input id="f_date" name="date" type="date" value="${esc(e.date)}" required></div>
+    <div class="field"><label for="f_qty">數量</label><div class="row"><input id="f_qty" name="qty" type="number" min="0" step="0.5" value="${esc(e.qty)}" required><span id="f_unit" class="hint"></span></div></div>
+    <div class="field"><label for="f_amount">金額（元）</label><input id="f_amount" name="amount" type="number" min="0" step="1" value="${esc(e.amount)}" required><span class="hint"><span id="f_calc"></span> <button type="button" class="linkbtn" id="f_recalc">重算</button></span></div>
+    <div class="field"><label for="f_cost">成本（選填）</label><input id="f_cost" name="cost" type="number" min="0" step="1" value="${esc(e.cost||'')}" placeholder="0"></div>
+    <div class="field full"><label for="f_note">備註</label><input id="f_note" name="note" value="${esc(e.note)}" placeholder="例如：稿件標題、影片名稱" autofocus></div>
+    <div class="note-box" id="f_status"></div>`,
+    ex?'儲存':'新增',v=>{
+      const w=getWork(v.workId),it=getItem(w,v.itemId);if(!it){toast('請選擇項目');return false}
+      const data={workId:w.id,itemId:it.id,date:v.date,qty:Number(v.qty)||0,amount:Math.round(Number(v.amount)||0),cost:Math.round(Number(v.cost)||0),note:v.note.trim()};
+      if(ex)Object.assign(ex,data);else state.entries.push({id:uid(),statementId:'',...data});
+      save();toast(ex?'已儲存':'已新增紀錄');
+    });
+  let touched=!!ex&&(()=>{const it=getItem(w0,e.itemId);return !it||Math.round(it.price*e.qty)!==e.amount})();
+  const wSel=$('f_workId'),iSel=$('f_itemId'),qIn=$('f_qty'),aIn=$('f_amount');
+  const curItem=()=>getItem(getWork(wSel.value),iSel.value);
+  const fillItems=keep=>{const w=getWork(wSel.value);iSel.innerHTML=w.items.map(i=>`<option value="${esc(i.id)}" ${i.id===keep?'selected':''}>${esc(i.name)}（${money(i.price)}/${esc(i.unit)}）</option>`).join('')};
+  const recalc=()=>{
+    const it=curItem();if(!it)return;
+    const q=Number(qIn.value)||0;
+    $('f_unit').textContent=it.unit;
+    $('f_calc').textContent=`${num(q)} ${it.unit} × ${money(it.price)} = ${money(q*it.price)}`;
+    if(!touched)aIn.value=Math.round(q*it.price);
+    const s=ex&&ex.statementId&&getStmt(ex.statementId),w=getWork(wSel.value),d=$('f_date').value;
+    $('f_status').innerHTML=s?`這筆在 <b>${md(s.start)}–${md(s.end)}</b> 的帳單裡，${s.paidDate?`已於 ${md(s.paidDate)} 入帳`:`${mdw(s.payday)} 發薪`}。改金額不會改動帳單金額。`
+      :isDate(d)?`還沒結帳。預估 <b>${mdw(payday(w,estMonth(w,d)))}</b> 發薪，實際以結帳時為準。`:'';
+  };
+  const setQty=()=>{const it=curItem();if(it&&!ex)qIn.value=it.quick};
+  fillItems(e.itemId);if(!ex)setQty();recalc();
+  wSel.addEventListener('change',()=>{fillItems('');setQty();touched=false;recalc()});
+  iSel.addEventListener('change',()=>{setQty();touched=false;recalc()});
+  qIn.addEventListener('input',recalc);
+  $('f_date').addEventListener('input',recalc);
+  aIn.addEventListener('input',()=>{touched=true});
+  $('f_recalc').addEventListener('click',()=>{touched=false;recalc()});
+}
+async function deleteEntry(id){
+  const e=state.entries.find(x=>x.id===id);if(!e)return;
+  const w=getWork(e.workId),it=getItem(w,e.itemId);
+  if(await ask('刪除紀錄',`<p>確定刪除 ${mdw(e.date)} ${esc(w?.name||'')}・${esc(it?.name||'')}（${money(e.amount)}）？</p>${e.statementId?'<p class="hint">這筆已在帳單裡；帳單金額不會自動改變。</p>':''}`,[{label:'刪除',value:true,cls:'danger-solid'}])){
+    state.entries=state.entries.filter(x=>x.id!==id);save();toast('已刪除');
+  }
+}
+
+/* ============ 結帳（帳單） ============ */
+function stmtForm({workId=null,id=null}={}){
+  const s=getStmt(id),w=getWork(s?s.workId:workId);if(!w)return;
+  const l=lastStmt(w);
+  const ub=state.entries.filter(e=>e.workId===w.id&&!e.statementId&&isDate(e.date)).map(e=>e.date).sort();
+  const start=s?s.start:(l?addDays(l.end,1):ub[0]?(w.cutoff==='end'?ym(ub[0])+'-01':ub[0]):`${thisMonth()}-01`);
+  const end=s?s.end:today();
+  openForm(s?`編輯帳單・${w.name}`:`${w.name}・結帳`,`
+    <div class="field"><label for="s_start">從</label><input id="s_start" name="start" type="date" value="${esc(start)}" required></div>
+    <div class="field"><label for="s_end">到</label><input id="s_end" name="end" type="date" value="${esc(end)}" required></div>
+    <div class="note-box" id="s_info"></div>
+    <div class="field"><label for="s_amount">對方確認的金額（元）</label><input id="s_amount" name="amount" type="number" min="0" step="1" value="${s?s.amount:''}" required></div>
+    <div class="field"><label for="s_payday">發薪日</label><input id="s_payday" name="payday" type="date" value="${esc(s?s.payday:'')}" required><span class="hint">依規則自動帶入：${esc(payRule(w))}</span></div>
+    <div class="field full"><label for="s_note">備註</label><input id="s_note" name="note" value="${esc(s?.note||'')}"></div>
+    ${s?`<div class="field full"><span class="hint">${s.paidDate?`已於 ${md(s.paidDate)} 入帳 ${money(s.paidAmount)}。`:''}<button type="button" class="linkbtn danger" data-act="del-stmt" data-id="${esc(s.id)}">刪除這張帳單</button>（紀錄會變回未結帳）</span></div>`:''}`,
+    s?'儲存':'確認結帳',v=>{
+      if(!isDate(v.start)||!isDate(v.end)||v.start>v.end){toast('起訖日期不對');return false}
+      const inR=inRange(v.start,v.end);
+      const data={start:v.start,end:v.end,amount:Math.round(Number(v.amount)||0),payday:isDate(v.payday)?v.payday:payday(w,ym(v.end)),note:v.note.trim()};
+      let S=s;
+      if(S)Object.assign(S,data);else{S={id:uid(),workId:w.id,...data,paidDate:'',paidAmount:0};state.statements.push(S)}
+      state.entries.forEach(e=>{if(e.statementId===S.id)e.statementId=''});
+      inR.forEach(e=>e.statementId=S.id);
+      save();toast(s?'已更新帳單':`已結帳 ${money(S.amount)}，${mdw(S.payday)} 發薪`);
+    });
+  const inRange=(a,b)=>state.entries.filter(e=>e.workId===w.id&&(!e.statementId||(s&&e.statementId===s.id))&&isDate(e.date)&&e.date>=a&&e.date<=b);
+  let amtTouched=!!s,pdTouched=!!s;
+  const upd=()=>{
+    const a=$('s_start').value,b=$('s_end').value;
+    if(!isDate(a)||!isDate(b)){$('s_info').textContent='';return}
+    const es=inRange(a,b),tot=sum(es,'amount');
+    $('s_info').innerHTML=es.length?`這段期間有 <b>${es.length}</b> 筆紀錄（${esc(qtySummary(es,w))}），合計 <b>${money(tot)}</b>。金額以對方確認的為準。`
+      :'這段期間沒有逐筆紀錄。可以直接填總金額（例如補登以前的帳）。';
+    if(!amtTouched)$('s_amount').value=es.length?tot:'';
+    if(!pdTouched)$('s_payday').value=payday(w,ym(b));
+  };
+  $('s_start').addEventListener('input',upd);$('s_end').addEventListener('input',upd);
+  $('s_amount').addEventListener('input',()=>amtTouched=true);
+  $('s_payday').addEventListener('input',()=>pdTouched=true);
+  upd();
+}
+async function deleteStmt(id){
+  const s=getStmt(id);if(!s)return;
+  $('formDlg').close();
+  if(!await ask('刪除帳單',`<p>確定刪除 ${md(s.start)}–${md(s.end)} 的帳單（${money(s.amount)}）？</p><p class="hint">裡面的工作紀錄不會刪除，會變回「未結帳」。</p>`,[{label:'刪除帳單',value:true,cls:'danger-solid'}]))return;
+  state.entries.forEach(e=>{if(e.statementId===id)e.statementId=''});
+  state.statements=state.statements.filter(x=>x.id!==id);
+  save();toast('已刪除帳單');
+}
+async function receive(id){
+  const s=getStmt(id);if(!s)return;
+  const w=getWork(s.workId);
+  const body=`<dl class="summary">
+      <dt>工作</dt><dd>${esc(w?.name||'')}</dd>
+      <dt>期間</dt><dd>${md(s.start)}–${md(s.end)}</dd>
+      <dt>應收</dt><dd class="money">${money(s.amount)}</dd>
+    </dl>
+    <div class="form">
+      <div class="field"><label for="p_date">入帳日</label><input id="p_date" type="date" value="${today()}"></div>
+      <div class="field"><label for="p_amt">實際收到（元）</label><input id="p_amt" type="number" min="0" step="1" value="${s.amount}"></div>
+    </div>
+    <p class="hint" style="margin-top:10px">如果實收比應收少（例如被扣繳稅款或二代健保補充保費），填實際收到的金額，差額會記下來。</p>`;
+  if(!await ask('記錄入帳',body,[{label:'確認入帳',value:true,cls:'primary'}]))return;
+  s.paidDate=isDate($('p_date').value)?$('p_date').value:today();
+  s.paidAmount=Math.round(Number($('p_amt').value)||0);
+  save();toast(`已記錄 ${w?.name||''} 入帳 ${money(s.paidAmount)}`);
+}
+async function undoPaid(id){
+  const s=getStmt(id);if(!s)return;
+  if(!await ask('取消這筆入帳',`<p>把 ${md(s.paidDate)} 收到的 ${money(s.paidAmount)} 改回「等發薪」？</p>`,[{label:'改回等發薪',value:true,cls:'primary'}]))return;
+  s.paidDate='';s.paidAmount=0;save();toast('已改回等發薪');
+}
+
+/* ============ 備份 ============ */
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`接案收入備份_${today()}.json`;document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('已匯出備份');
+}
+$('importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let x;
+  try{x=JSON.parse(await f.text());if(!Array.isArray(x.works)||!Array.isArray(x.entries))throw 0}
+  catch(_){toast('檔案格式不正確，無法匯入');return}
+  const n=Array.isArray(x.statements)?normalize(x):normalize({...fromLegacy(x)});
+  if(await ask('匯入備份',`<p>這份備份有 ${n.works.length} 份工作、${n.entries.length} 筆紀錄、${n.statements.length} 張帳單。</p><p class="hint" style="color:var(--pending)">匯入會<strong>取代</strong>目前瀏覽器裡的所有資料，建議先匯出一份目前的備份。</p>`,[{label:'取代並匯入',value:true,cls:'primary'}])){
+    state=n;save();toast('匯入完成');
+  }
+});
+
+/* ============ Google 試算表同步 ============
+   試算表裡的隱藏工作表 _data 存完整資料（以它為準），
+   「工作紀錄／帳單／每月彙總／工作設定」是每次同步時重新產生的好讀版本。 */
+const SYNC_KEY='freelanceSync';
+let sync={url:'',token:'',rev:0,sheetUrl:'',at:''};
+const syncState={status:'off',busy:false,dirty:false,timer:0,msg:''};
+function genToken(){const a=new Uint8Array(12);crypto.getRandomValues(a);return[...a].map(b=>b.toString(16).padStart(2,'0')).join('')}
+function loadSync(){
+  try{Object.assign(sync,JSON.parse(localStorage.getItem(SYNC_KEY))||{})}catch(e){}
+  if(!sync.token){sync.token=genToken();saveSync()}
+}
+function saveSync(){try{localStorage.setItem(SYNC_KEY,JSON.stringify(sync))}catch(e){}}
+const hhmm=iso=>{const d=iso?new Date(iso):null;return d&&!isNaN(d)?`${pad(d.getHours())}:${pad(d.getMinutes())}`:''};
+function setSync(status,msg=''){
+  syncState.status=status;syncState.msg=msg;
+  if(status==='ok'){sync.at=new Date().toISOString();saveSync()}
+  const c=$('syncChip');c.dataset.s=status;c.title=msg;
+  c.textContent={off:'☁ 連結 Google 試算表',pending:'⋯ 等待同步',syncing:'⟳ 同步中…',ok:`✓ 已同步到試算表 ${hhmm(sync.at)}`,error:'⚠ 沒有同步成功・點這裡重試'}[status];
+}
+function errMsg(e){
+  const m=String(e&&e.message||e);
+  if(m==='bad_token')return '密碼對不上。請用這個網頁「複製程式碼」貼到 Apps Script、重新部署；或在其他裝置使用「連線碼」。';
+  if(m==='not_json')return '試算表回應不正確。請確認部署成「網頁應用程式」、「誰可以存取」選「所有人」，網址要是 /exec 結尾。';
+  if(e&&e.name==='AbortError')return '連線逾時，請稍後再試。';
+  if(e instanceof TypeError)return '連不上，請確認網路，以及網址是否正確。';
+  return '發生錯誤：'+m;
+}
+async function api(body){
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),45000);
+  try{
+    const r=await fetch(sync.url,{method:'POST',body:JSON.stringify({...body,token:sync.token}),signal:ctl.signal});
+    const text=await r.text();
+    try{return JSON.parse(text)}catch(_){throw new Error('not_json')}
+  }finally{clearTimeout(t)}
+}
+function schedulePush(){
+  if(!sync.url)return;
+  syncState.dirty=true;setSync('pending');
+  clearTimeout(syncState.timer);syncState.timer=setTimeout(push,1200);
+}
+async function push(){
+  if(!sync.url)return;
+  clearTimeout(syncState.timer);
+  if(syncState.busy){syncState.dirty=true;return}
+  syncState.busy=true;syncState.dirty=false;setSync('syncing');
+  let failed=false;
+  try{
+    const r=await api({action:'save',baseRev:sync.rev,data:state,tables:sheetTables()});
+    if(r.conflict){
+      state=normalize(r.data||{});sync.rev=r.rev;persist();render();
+      toast('另一台裝置剛更新過，已換成最新資料；剛才的變更沒存到，請再做一次');
+    }else if(!r.ok)throw new Error(r.error);
+    else{sync.rev=r.rev;if(r.sheetUrl)sync.sheetUrl=r.sheetUrl}
+    saveSync();setSync('ok');
+  }catch(e){failed=true;syncState.dirty=true;setSync('error',errMsg(e))}
+  finally{syncState.busy=false;if(!failed&&syncState.dirty)schedulePush()}
+}
+async function pull(notify){
+  if(!sync.url||syncState.busy)return;
+  if(syncState.dirty){push();return}
+  syncState.busy=true;setSync('syncing');
+  let needPush=false;
+  try{
+    const r=await api({action:'get'});
+    if(!r.ok)throw new Error(r.error);
+    if(r.sheetUrl)sync.sheetUrl=r.sheetUrl;
+    if(!r.data)needPush=true;
+    else if(r.rev!==sync.rev){state=normalize(r.data);sync.rev=r.rev;persist();render();if(notify)toast('已載入試算表上的最新資料')}
+    saveSync();setSync('ok');
+  }catch(e){setSync('error',errMsg(e))}
+  finally{syncState.busy=false;if(needPush)push()}
+}
+
+// 產生試算表上好讀的表格
+function sheetTables(){
+  const ser=s=>isDate(s)?(()=>{const{y,m,d}=parts(s);return Math.round((Date.UTC(y,m-1,d)-Date.UTC(1899,11,30))/864e5)})():'';
+  const tx=s=>{s=String(s??'');return /^[=+\-@]/.test(s)?"'"+s:s};
+  const F={d:'yyyy/mm/dd',$:'"$"#,##0',n:'0.##',t:'@'};
+  const stLabel={paid:'已入帳',billed:'已結帳・等發薪',est:'未結帳（預估）'};
+  const entries=[...state.entries].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const t1={name:'工作紀錄',headers:['日期','工作','項目','數量','單位','金額','成本','備註','狀態','帳單期間','發薪／入帳日'],
+    formats:[F.d,F.t,F.t,F.n,F.t,F.$,F.$,F.t,F.t,F.t,F.d],
+    rows:entries.map(e=>{const w=getWork(e.workId),it=getItem(w,e.itemId),st=entryStatus(e);
+      return[ser(e.date),tx(w?.name||'已刪除的工作'),tx(it?.name||''),Number(e.qty)||0,tx(it?.unit||''),e.amount,e.cost||0,tx(e.note),stLabel[st.k],st.s?`${st.s.start} ~ ${st.s.end}`:'',ser(st.date)]})};
+  const stmts=[...state.statements].sort((a,b)=>a.end.localeCompare(b.end));
+  const t2={name:'帳單',headers:['工作','開始','結束','應收','發薪日','狀態','入帳日','實收','差額','備註'],
+    formats:[F.t,F.d,F.d,F.$,F.d,F.t,F.d,F.$,F.$,F.t],
+    rows:stmts.map(s=>[tx(getWork(s.workId)?.name||'已刪除的工作'),ser(s.start),ser(s.end),s.amount,ser(s.payday),s.paidDate?'已入帳':'等發薪',ser(s.paidDate),s.paidDate?s.paidAmount:'',s.paidDate?s.paidAmount-s.amount:'',tx(s.note)])};
+  // 每月彙總
+  const months=new Set();
+  state.entries.forEach(e=>isDate(e.date)&&months.add(ym(e.date)));
+  state.statements.forEach(s=>months.add(ym(s.paidDate||s.payday)));
+  const est=estGroups();est.forEach(g=>months.add(ym(g.payday)));
+  const rows3=[];
+  [...months].filter(Boolean).sort().forEach(m=>{
+    let tot=[0,0,0];
+    state.works.forEach(w=>{
+      const done=state.entries.filter(e=>e.workId===w.id&&ym(e.date)===m);
+      const got=sum(state.statements.filter(s=>s.workId===w.id&&ym(s.paidDate)===m),'paidAmount');
+      const exp=sum(state.statements.filter(s=>s.workId===w.id&&!s.paidDate&&ym(s.payday)===m),'amount')+sum(est.filter(g=>g.work.id===w.id&&ym(g.payday)===m),'amount');
+      const a=sum(done,'amount');
+      if(!a&&!got&&!exp)return;
+      tot=[tot[0]+a,tot[1]+got,tot[2]+exp];
+      rows3.push([fmtMonth(m),tx(w.name),tx(qtySummary(done,w)),a,got,exp]);
+    });
+    rows3.push([fmtMonth(m),'合計','',...tot]);
+  });
+  const t3={name:'每月彙總',headers:['月份','工作','工作量','做的工作金額','實際入帳','待入帳（含預估）'],formats:[F.t,F.t,F.t,F.$,F.$,F.$],rows:rows3};
+  const t4={name:'工作設定',headers:['工作','類型','計費項目','約幾號結帳','發薪規則','每週目標'],formats:[F.t,F.t,F.t,F.t,F.t,F.n],
+    rows:state.works.map(w=>[tx(w.name),tx(w.kind),tx(w.items.map(i=>`${i.name} ${money(i.price)}/${i.unit}`).join('、')),w.cutoff==='end'?'月底':`${w.cutoff} 號左右`,payRule(w),w.weeklyTarget||''])};
+  return[t1,t2,t3,t4];
+}
+
+function gasCode(){return $('gasSource').textContent.replace('__TOKEN__',sync.token)}
+async function copyText(text,label){
+  try{await navigator.clipboard.writeText(text)}
+  catch(_){const ta=document.createElement('textarea');ta.value=text;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove()}
+  toast(`已複製${label}`);
+}
+function openSyncDlg(){
+  const d=$('askDlg');
+  $('askTitle').textContent='Google 試算表';
+  $('askFoot').innerHTML='';
+  const close=document.createElement('button');close.type='button';close.className='btn';close.textContent='關閉';close.onclick=()=>d.close();
+  if(sync.url){
+    $('askBody').innerHTML=`
+      <p>已連結。每次修改都會自動存進試算表${sync.at?`，最後同步 ${hhmm(sync.at)}`:''}。</p>
+      ${sync.sheetUrl?`<p><a href="${esc(sync.sheetUrl)}" target="_blank" rel="noopener">開啟試算表 ↗</a></p>`:''}
+      <p class="hint">試算表裡的「工作紀錄、帳單、每月彙總、工作設定」是每次同步時自動產生的，要修改請在這個網頁上改；直接改試算表會在下次同步時被蓋掉。</p>
+      <div class="field" style="margin-top:14px"><span class="flabel">連線碼（在手機或其他電腦的這個網頁貼上，就能用同一份資料）</span>
+        <div class="inline"><input readonly value="${esc(sync.url+'|'+sync.token)}" aria-label="連線碼"><button type="button" class="btn sm" data-act="copy-code">複製</button></div>
+        <span class="hint">連線碼等於密碼，只給自己的裝置用。</span></div>
+      <p class="msg ${syncState.status==='error'?'err':''}">${syncState.status==='error'?esc(syncState.msg):''}</p>`;
+    const now=document.createElement('button');now.type='button';now.className='btn primary';now.textContent='立即同步';
+    now.onclick=()=>{d.close();syncState.dirty?push():pull(true)};
+    const off=document.createElement('button');off.type='button';off.className='btn danger';off.textContent='取消連結';
+    off.onclick=()=>{Object.assign(sync,{url:'',rev:0,sheetUrl:'',at:''});saveSync();syncState.dirty=false;clearTimeout(syncState.timer);setSync('off');d.close();toast('已取消連結，資料還在這個瀏覽器裡')};
+    $('askFoot').append(off,close,now);
+  }else{
+    $('askBody').innerHTML=`
+      <p>連結後，每次修改都會自動存到你的 Google 試算表，手機和其他電腦也能用同一份資料。</p>
+      <p class="hint" style="margin-bottom:12px">已經在別台裝置連結過？跳到最下面，貼上那台的「連線碼」就好。</p>
+      <ol class="steps">
+        <li>開一個新的 Google 試算表（網址列輸入 <b>sheets.new</b>），名稱隨意取。</li>
+        <li>上方選單「擴充功能」→「Apps Script」。把編輯器裡原本的程式全部刪掉，貼上這段，按 💾 儲存。
+          <textarea class="code" readonly id="gasCodeBox"></textarea>
+          <button type="button" class="btn sm" data-act="copy-script" style="margin-top:6px">複製程式碼</button></li>
+        <li>右上角「部署」→「新增部署作業」→ 左邊齒輪選「網頁應用程式」。<br>「執行身分」選<b>我</b>，「誰可以存取」選<b>所有人</b>，按「部署」。</li>
+        <li>Google 會要求授權：選你的帳號 →「進階」→「前往（不安全）」→「允許」。這是你自己寫的程式，所以 Google 會這樣提醒。</li>
+        <li>複製「網頁應用程式」的網址（<b>/exec</b> 結尾），貼在下面。</li>
+      </ol>
+      <div class="field"><label for="sync_url">網址或連線碼</label><input id="sync_url" placeholder="https://script.google.com/macros/s/…/exec"></div>
+      <p class="msg" id="sync_msg"></p>`;
+    $('gasCodeBox').value=gasCode();$('gasCodeBox').scrollTop=0;
+    const go=document.createElement('button');go.type='button';go.className='btn primary';go.textContent='連結';go.id='sync_go';
+    go.onclick=syncConnect;
+    $('askFoot').append(close,go);
+  }
+  d.onclose=null;
+  if(!d.open)d.showModal();
+}
+async function syncConnect(){
+  const msg=(t,err)=>{$('sync_msg').textContent=t;$('sync_msg').className='msg'+(err?' err':'')};
+  let raw=$('sync_url').value.trim(),url=raw,token=sync.token;
+  if(raw.includes('|'))[url,token]=raw.split('|').map(s=>s.trim());
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec\/?$/.test(url)){msg('網址格式不對：應該是 https://script.google.com/macros/s/……/exec',true);return}
+  const prev={...sync};
+  Object.assign(sync,{url,token});
+  msg('連線中…');$('sync_go').disabled=true;
+  let r;
+  try{r=await api({action:'get'});if(!r.ok)throw new Error(r.error)}
+  catch(e){Object.assign(sync,prev);msg(errMsg(e),true);$('sync_go').disabled=false;return}
+  sync.sheetUrl=r.sheetUrl||'';
+  $('askDlg').close();
+  const remote=r.data&&normalize(r.data),hasRemote=remote&&(remote.entries.length||remote.statements.length);
+  if(hasRemote){
+    const c=await ask('試算表裡已經有資料',`
+      <dl class="summary">
+        <dt>試算表</dt><dd>${remote.works.length} 份工作・${remote.entries.length} 筆紀錄・${remote.statements.length} 張帳單</dd>
+        <dt>這個瀏覽器</dt><dd>${state.works.length} 份工作・${state.entries.length} 筆紀錄・${state.statements.length} 張帳單</dd>
+      </dl><p>要用哪一份？另一份會被取代。</p>`,
+      [{label:'用這裡的資料覆蓋試算表',value:'local',cls:'danger'},{label:'用試算表的資料',value:'remote',cls:'primary'}]);
+    if(!c){Object.assign(sync,prev);saveSync();toast('沒有連結');return}
+    sync.rev=r.rev;saveSync();
+    if(c==='remote'){state=remote;persist();render();setSync('ok');toast('已連結，改用試算表上的資料');return}
+  }else{sync.rev=r.rev||0;saveSync()}
+  await push();
+  if(syncState.status==='ok')toast('已連結！資料已經寫進試算表');
+}
+window.addEventListener('beforeunload',e=>{if(sync.url&&(syncState.dirty||syncState.busy)){e.preventDefault();e.returnValue=''}});
+document.addEventListener('visibilitychange',()=>{
+  if(!sync.url)return;
+  if(document.visibilityState==='hidden'&&syncState.dirty&&!syncState.busy)push();
+  if(document.visibilityState==='visible')pull(true);
+});
+
+/* ============ 事件 ============ */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const id=b.dataset.id;
+  switch(b.dataset.act){
+    case 'prev-month':setMonth(addMonths(curMonth(),-1));break;
+    case 'next-month':setMonth(addMonths(curMonth(),1));break;
+    case 'this-month':setMonth(thisMonth());break;
+    case 'add-work':workForm();break;
+    case 'edit-work':workForm(id);break;
+    case 'del-work':deleteWork(id);break;
+    case 'add-item-row':$('itemRows').insertAdjacentHTML('beforeend',itemRow({id:'',name:'',unit:'件',price:'',quick:1}));break;
+    case 'del-item-row':if($('itemRows').children.length>1)b.closest('.item-row').remove();else toast('至少要有一個計費項目');break;
+    case 'quick':quickAdd(b.dataset.work,b.dataset.item);break;
+    case 'add-entry':entryForm({workId:id||null});break;
+    case 'edit-entry':entryForm({id});break;
+    case 'del-entry':deleteEntry(id);break;
+    case 'bill':stmtForm({workId:id});break;
+    case 'edit-stmt':stmtForm({id});break;
+    case 'del-stmt':deleteStmt(id);break;
+    case 'receive':receive(id);break;
+    case 'undo-paid':undoPaid(id);break;
+    case 'close-form':$('formDlg').close();break;
+    case 'scope':scope=b.dataset.val;render();break;
+    case 'export':exportData();break;
+    case 'import':$('importFile').click();break;
+    case 'sync-chip':if(syncState.status==='error'){syncState.dirty?push():pull(true)}else openSyncDlg();break;
+    case 'copy-script':copyText(gasCode(),'程式碼');break;
+    case 'copy-code':copyText(sync.url+'|'+sync.token,'連線碼');break;
+  }
+});
+$('monthPicker').addEventListener('change',render);
+$('workFilter').addEventListener('change',render);
+$('statusFilter').addEventListener('change',render);
+$('searchInput').addEventListener('input',render);
+
+loadSync();
+load();
+if(sync.url)pull(false);
+</script>
+</body>
+</html>
